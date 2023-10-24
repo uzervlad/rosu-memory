@@ -8,7 +8,7 @@ use crate::structs::{
 
 use std::{
     str::FromStr, 
-    collections::HashMap, net::TcpStream, path::PathBuf
+    collections::HashMap, net::TcpStream, path::PathBuf, time::Duration
 };
 
 use clap::Parser;
@@ -266,7 +266,15 @@ fn main() -> Result<()> {
         let p = match Process::initialize("osu!.exe") {
             Ok(p) => p,
             Err(e) => {
-                println!("{:?}", Report::new(e));
+                match e {
+                    ProcessError::ProcessNotFound => {
+                        println!("Unable to find osu!, retrying...");
+                        std::thread::sleep(Duration::from_secs(1));
+                    },
+                    _ => {
+                        println!("{:?}", Report::new(e));
+                    }
+                }
                 continue 'init_loop
             },
         };
